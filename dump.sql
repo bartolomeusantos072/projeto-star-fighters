@@ -1,7 +1,0 @@
-CREATE TABLE fighters (
-	id SERIAL PRIMARY KEY,
-	username TEXT NOT NULL,
-	wins INTEGER NOT NULL,
-	losses INTEGER NOT NULL,
-	draws INTEGER NOT NULL
-);
