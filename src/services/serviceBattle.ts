@@ -1,81 +1,82 @@
 import axios from "axios";
-import * as fighter from "../repositories/fighter.js";
+import * as participant from "../repositories/participant.js";
 
 export async function find() {
-  return fighter.find();
+  return participant.find();
 }
 
 export async function battle(firstUser: string, secondUser: string) {
-  const firstUserRepos = await getFighterRepos(firstUser);
-  const secondUserRepos = await getFighterRepos(secondUser);
+  const firstUserRepos = await getParticipantRepos(firstUser);
+  const secondUserRepos = await getParticipantRepos(secondUser);
 
-  const firstFighter = await getFighter(firstUser);
-  const secondFighter = await getFighter(secondUser);
+  const firstParticipant = await getParticipant(firstUser);
+  const secondParticipant = await getParticipant(secondUser);
 
-  const firstUserStarCount = getFighterStarCount(firstUserRepos);
-  const secondUserStarCount = getFighterStarCount(secondUserRepos);
+  const firstUserStarCount = getParticipantStarCount(firstUserRepos);
+  const secondUserStarCount = getParticipantStarCount(secondUserRepos);
 
   return getBattleResult(
-    firstFighter,
-    secondFighter,
+    firstParticipant,
+    secondParticipant,
     firstUserStarCount,
     secondUserStarCount
   );
 }
 
-async function getFighterRepos(username: string) {
+async function getParticipantRepos(username: string) {
   const { data } = await axios.get(`https://api.github.com/users/${username}/repos`);
   return data;
 }
 
-async function getFighter(username: string) {
-  const fighter = await fighter.findByUsername(username);
+async function getParticipant(username: string) {
+
+  const fighter = await participant.findUsername(username);
 
   if (!fighter) {
-    const createdFighter = await fighter.insert(username);
-    return { id: createdFighter.id, username, wins: 0, losses: 0, draws: 0 };
+    const createdParticipant = await participant.insert(username);
+    return { id: createdParticipant.id, username, wins: 0, losses: 0, draws: 0 };
   }
 
   return fighter;
 }
 
-function getFighterStarCount(fighterRepos: any[]) {
-  const repoStars = fighterRepos.map((repo) => repo.stargazers_count);
+function getParticipantStarCount(participantRepos: any[]) {
+  const repoStars = participantRepos.map((repo) => repo.stargazers_count);
   if (repoStars.length === 0) return 0;
 
   return repoStars.reduce((current: number, sum: number) => sum + current);
 }
 
-async function getBattleResult(firstFighter: any, secondFighter: any, firstUserStarCount: number, secondUserStarCount: number) {
+async function getBattleResult(firstParticipant: any, secondParticipant: any, firstUserStarCount: number, secondUserStarCount: number) {
   if (firstUserStarCount > secondUserStarCount) {
-    await updateWinnerAndLoserStats(firstFighter.id, secondFighter.id);
+    await updateWinnerAndLoserStats(firstParticipant.id, secondParticipant.id);
 
     return {
-      winner: firstFighter.username,
-      loser: secondFighter.username,
+      winner: firstParticipant.username,
+      loser: secondParticipant.username,
       draw: false,
     };
   }
 
   if (secondUserStarCount < firstUserStarCount) {
-    await updateWinnerAndLoserStats(secondFighter.id, firstFighter.id);
+    await updateWinnerAndLoserStats(secondParticipant.id, firstParticipant.id);
     return {
-      winner: secondFighter.username,
-      loser: firstFighter.username,
+      winner: secondParticipant.username,
+      loser: firstParticipant.username,
       draw: false,
     };
   }
 
-  await updateDrawStats(firstFighter.id, secondFighter.id);
+  await updateDrawStats(firstParticipant.id, secondParticipant.id);
   return { winner: null, loser: null, draw: true };
 }
 
 async function updateWinnerAndLoserStats(winnerId: number, loserId: number) {
-  await fighter.update(winnerId, "wins");
-  await fighter.update(loserId, "losses");
+  await participant.update(winnerId, "wins");
+  await participant.update(loserId, "losses");
 }
 
-async function updateDrawStats(firstFighterId: number, secondFighterId: number) {
-  await fighter.update(firstFighterId, "draws");
-  await fighter.update(secondFighterId, "draws");
+async function updateDrawStats(firstParticipantId: number, secondParticipantId: number) {
+  await participant.update(firstParticipantId, "draws");
+  await participant.update(secondParticipantId, "draws");
 }

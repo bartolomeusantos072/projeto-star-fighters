@@ -11,7 +11,7 @@ export async function find() {
   return result.rows;
 }
 
-export async function findByUsername(username: string) {
+export async function findUsername(username: string) {
     const result = await connection.query(
       `
         SELECT * 
