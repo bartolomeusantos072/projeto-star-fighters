@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import * as serviceBattle from "../services/serviceBattle.js";
+import * as serviceBattle from "../services/serviceBattle";
 
 export async function ranking( req:Request, res: Response){
     const result= await serviceBattle.find();

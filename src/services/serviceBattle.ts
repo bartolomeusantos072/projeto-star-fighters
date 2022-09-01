@@ -1,5 +1,5 @@
 import axios from "axios";
-import * as participant from "../repositories/participant.js";
+import * as participant from "../repositories/participant";
 
 export async function find() {
   return participant.find();
